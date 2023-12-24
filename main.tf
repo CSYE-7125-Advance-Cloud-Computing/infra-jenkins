@@ -3,9 +3,9 @@ resource "aws_vpc" "jenkins_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 
-    tags = {
-        Name = "Jenkins VPC"
-    }
+  tags = {
+    Name = "Jenkins VPC"
+  }
 }
 
 # Subnets
@@ -47,7 +47,7 @@ resource "aws_route_table" "jenkins_rt" {
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins_application"
   description = "Allow TLS inbound/outbound traffic"
-  vpc_id = aws_vpc.jenkins_vpc.id
+  vpc_id      = aws_vpc.jenkins_vpc.id
 
   ingress {
     description = "TLS from VPC"
@@ -56,7 +56,7 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   ingress {
     description = "TLS from VPC"
     from_port   = 443
@@ -64,7 +64,7 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   ingress {
     description = "TLS from VPC"
     from_port   = 22
@@ -106,10 +106,10 @@ resource "aws_key_pair" "ssh_key" {
 
 # EC2 Instance
 resource "aws_instance" "jenkins_server" {
-  ami           = data.aws_ami.latest_jenkins_ami.id
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.ssh_key.key_name
-  subnet_id     = aws_subnet.jenkins_subnet.id
+  ami                    = data.aws_ami.latest_jenkins_ami.id
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.ssh_key.key_name
+  subnet_id              = aws_subnet.jenkins_subnet.id
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
   user_data = templatefile("${path.module}/user_data.sh", {
@@ -124,12 +124,12 @@ resource "aws_instance" "jenkins_server" {
 
 # Elastic IP
 resource "aws_eip" "jenkins_eip" {
-  domain = "vpc"
+  domain   = "vpc"
   instance = aws_instance.jenkins_server.id
 }
 
 data "aws_route53_zone" "hosted_zone" {
-  name = "${var.domain_name}"
+  name = var.domain_name
 }
 
 # Route53 Record
