@@ -1,21 +1,28 @@
 # VPC
 resource "aws_vpc" "jenkins_vpc" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = var.cidr_block
   enable_dns_hostnames = true
 
   tags = {
-    Name = "Jenkins VPC"
+    Name = "Jenkins VPC ${var.vpc_id}"
   }
 }
 
+data "aws_availability_zones" "all" {
+  state = "available"
+}
+
+
 # Subnets
 resource "aws_subnet" "jenkins_subnet" {
+  count                   = var.public_subnet
   vpc_id                  = aws_vpc.jenkins_vpc.id
-  cidr_block              = "10.0.1.0/24"
+  cidr_block              = cidrsubnet(var.cidr_block, 8, count.index)
+  availability_zone       = element(data.aws_availability_zones.all.names, count.index % length(data.aws_availability_zones.all.names))
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "Public subnet - VPC ${aws_vpc.jenkins_vpc.id}"
+    Name = "Public subnet ${count.index + 1} - VPC ${var.vpc_id}"
   }
 
 }
@@ -29,6 +36,7 @@ resource "aws_internet_gateway" "jenkins_igw" {
   }
 }
 
+
 # Route Table
 resource "aws_route_table" "jenkins_rt" {
   vpc_id = aws_vpc.jenkins_vpc.id
@@ -41,6 +49,12 @@ resource "aws_route_table" "jenkins_rt" {
   tags = {
     Name = "Public route table"
   }
+}
+
+resource "aws_route_table_association" "aws_public_route_table_association" {
+  count          = var.public_subnet
+  subnet_id      = aws_subnet.jenkins_subnet[count.index].id
+  route_table_id = aws_route_table.jenkins_rt.id
 }
 
 # Security Group
@@ -109,13 +123,19 @@ resource "aws_instance" "jenkins_server" {
   ami                    = data.aws_ami.latest_jenkins_ami.id
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.ssh_key.key_name
-  subnet_id              = aws_subnet.jenkins_subnet.id
+  subnet_id              = aws_subnet.jenkins_subnet[0].id
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
   user_data = templatefile("${path.module}/user_data.sh", {
     domain_name = var.domain_name
     email       = var.email
   })
+
+  root_block_device {
+    delete_on_termination = true
+    volume_size           = 50
+    volume_type           = "gp2"
+  }
 
   tags = {
     Name = "Jenkins Server"
@@ -140,4 +160,3 @@ resource "aws_route53_record" "jenkins_dns" {
   ttl     = "60"
   records = [aws_eip.jenkins_eip.public_ip]
 }
-
