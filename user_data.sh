@@ -27,4 +27,4 @@ sudo nginx -t && sudo systemctl restart nginx
 
 # Obtain SSL certificate
 # Use --staging flag for testing to avoid rate limits
-sudo certbot --nginx -d ${domain_name} --staging --non-interactive --agree-tos --email ${email} --redirect
+sudo certbot --nginx -d ${domain_name} --non-interactive --agree-tos --email ${email} --redirect

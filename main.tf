@@ -121,7 +121,7 @@ resource "aws_key_pair" "ssh_key" {
 # EC2 Instance
 resource "aws_instance" "jenkins_server" {
   ami                    = data.aws_ami.latest_jenkins_ami.id
-  instance_type          = "t2.micro"
+  instance_type          = "t2.large"
   key_name               = aws_key_pair.ssh_key.key_name
   subnet_id              = aws_subnet.jenkins_subnet[0].id
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
