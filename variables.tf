@@ -22,7 +22,7 @@ variable "profile" {
   type = string
 }
 
-variable "rsa_public" {
+variable "public_key_path" {
   type      = string
   sensitive = true
 }

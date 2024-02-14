@@ -1,4 +1,6 @@
-# VPC
+# This file contains the main configuration of the infrastructure
+
+# VPC Configuration
 resource "aws_vpc" "jenkins_vpc" {
   cidr_block           = var.cidr_block
   enable_dns_hostnames = true
@@ -8,16 +10,16 @@ resource "aws_vpc" "jenkins_vpc" {
   }
 }
 
+# Availability Zones
 data "aws_availability_zones" "all" {
   state = "available"
 }
 
-
-# Subnets
+# Subnets Configuration
 resource "aws_subnet" "jenkins_subnet" {
   count                   = var.public_subnet
   vpc_id                  = aws_vpc.jenkins_vpc.id
-  cidr_block              = cidrsubnet(var.cidr_block, 8, count.index)
+  cidr_block              = cidrsubnet(var.cidr_block, 1, count.index)
   availability_zone       = element(data.aws_availability_zones.all.names, count.index % length(data.aws_availability_zones.all.names))
   map_public_ip_on_launch = true
 
@@ -27,7 +29,7 @@ resource "aws_subnet" "jenkins_subnet" {
 
 }
 
-# Internet Gateway
+# Internet Gateway Configuration
 resource "aws_internet_gateway" "jenkins_igw" {
   vpc_id = aws_vpc.jenkins_vpc.id
 
@@ -37,7 +39,7 @@ resource "aws_internet_gateway" "jenkins_igw" {
 }
 
 
-# Route Table
+# Route Table Configuration
 resource "aws_route_table" "jenkins_rt" {
   vpc_id = aws_vpc.jenkins_vpc.id
 
@@ -51,20 +53,21 @@ resource "aws_route_table" "jenkins_rt" {
   }
 }
 
+# Route Table Association
 resource "aws_route_table_association" "aws_public_route_table_association" {
   count          = var.public_subnet
   subnet_id      = aws_subnet.jenkins_subnet[count.index].id
   route_table_id = aws_route_table.jenkins_rt.id
 }
 
-# Security Group
+# Security Group Configuration
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins_application"
   description = "Allow TLS inbound/outbound traffic"
   vpc_id      = aws_vpc.jenkins_vpc.id
 
   ingress {
-    description = "TLS from VPC"
+    description = "HTTP from VPC"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -80,22 +83,15 @@ resource "aws_security_group" "jenkins_sg" {
   }
 
   ingress {
-    description = "TLS from VPC"
+    description = "SSH from VPC"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "TLS from VPC"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
+    description = "Outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -113,12 +109,13 @@ data "aws_ami" "latest_jenkins_ami" {
 
 }
 
+# Key Pair
 resource "aws_key_pair" "ssh_key" {
   key_name   = "jenkins_ssh"
-  public_key = var.rsa_public
+  public_key = file(var.public_key_path)
 }
 
-# EC2 Instance
+# EC2 Instance Configuration
 resource "aws_instance" "jenkins_server" {
   ami                    = data.aws_ami.latest_jenkins_ami.id
   instance_type          = "t2.large"
@@ -137,22 +134,29 @@ resource "aws_instance" "jenkins_server" {
     volume_type           = "gp2"
   }
 
+  lifecycle {
+    prevent_destroy = false
+  }
+
+  depends_on = [aws_route53_record.jenkins_dns]
+
   tags = {
     Name = "Jenkins Server"
   }
 }
 
-# Elastic IP
+# Elastic IP Configuration
 resource "aws_eip" "jenkins_eip" {
   domain   = "vpc"
   instance = aws_instance.jenkins_server.id
 }
 
+# Route53 Hosted Zone
 data "aws_route53_zone" "hosted_zone" {
   name = var.domain_name
 }
 
-# Route53 Record
+# Route53 Record Configuration
 resource "aws_route53_record" "jenkins_dns" {
   zone_id = data.aws_route53_zone.hosted_zone.zone_id
   name    = data.aws_route53_zone.hosted_zone.name
