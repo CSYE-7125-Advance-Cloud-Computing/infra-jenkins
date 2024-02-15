@@ -132,7 +132,7 @@ resource "aws_instance" "jenkins_server" {
       private_key = file(var.ssh_private_key)
       host        = self.public_ip
     }
-    
+
   }
 
   provisioner "file" {
