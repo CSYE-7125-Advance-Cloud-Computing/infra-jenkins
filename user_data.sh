@@ -28,3 +28,7 @@ sudo nginx -t && sudo systemctl restart nginx
 # Obtain SSL certificate
 # Use --staging flag for testing to avoid rate limits
 sudo certbot --nginx -d ${domain_name} --non-interactive --agree-tos --email ${email} --redirect
+
+sudo cp /home/ubuntu/seedJob.groovy /var/lib/jenkins
+sudo cp /home/ubuntu/casc.yaml /var/lib/jenkins
+sudo systemctl restart jenkins
