@@ -34,3 +34,11 @@ variable "domain_name" {
 variable "email" {
   type = string
 }
+
+variable "ssh_username" {
+  type = string
+}
+
+variable "ssh_private_key" {
+  type = string
+}

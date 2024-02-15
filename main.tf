@@ -123,6 +123,29 @@ resource "aws_instance" "jenkins_server" {
   subnet_id              = aws_subnet.jenkins_subnet[0].id
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
+  provisioner "file" {
+    source      = "seedJob.groovy"
+    destination = "seedJob.groovy"
+    connection {
+      type        = "ssh"
+      user        = var.ssh_username
+      private_key = file(var.ssh_private_key)
+      host        = self.public_ip
+    }
+    
+  }
+
+  provisioner "file" {
+    source      = "casc.yaml"
+    destination = "casc.yaml"
+    connection {
+      type        = "ssh"
+      user        = var.ssh_username
+      private_key = file(var.ssh_private_key)
+      host        = self.public_ip
+    }
+  }
+
   user_data = templatefile("${path.module}/user_data.sh", {
     domain_name = var.domain_name
     email       = var.email
@@ -137,8 +160,6 @@ resource "aws_instance" "jenkins_server" {
   lifecycle {
     prevent_destroy = false
   }
-
-  depends_on = [aws_route53_record.jenkins_dns]
 
   tags = {
     Name = "Jenkins Server"
