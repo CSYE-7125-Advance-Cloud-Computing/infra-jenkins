@@ -1,0 +1,30 @@
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+       - id: ${user_id} 
+         password: ${password}
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Administer:${user_id}"
+        - "Overall/Read:authenticated"
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - usernamepassword:
+          scope: GLOBAL
+          id: "jenkinaccesstoken"
+          username: ${username} 
+          password: ${password}
+          description: "default credentials."
+      - usernamepassword:
+          scope: GLOBAL
+          id: "docker-hub-credentials"
+          username: ${username}
+          password: ${password}
+          description: "default credentials."
+jobs:
+- file: /var/lib/jenkins/seedJob.groovy
