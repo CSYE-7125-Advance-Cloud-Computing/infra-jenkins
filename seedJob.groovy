@@ -11,7 +11,6 @@ pipelineJob('webapp_docker_build') {
                 git {
                     remote {
                         url('https://github.com/CSYE-7125-Advance-Cloud-Computing/webapp')
-                        credentials('jenkinaccesstoken')
                     }
                     branches('*/main')
                 }
@@ -38,7 +37,6 @@ pipelineJob('webapp_db_docker_build') {
                 git {
                     remote {
                         url('https://github.com/CSYE-7125-Advance-Cloud-Computing/webapp-db')
-                        credentials('jenkinaccesstoken')
                     }
                     branches('*/main')
                 }
@@ -66,7 +64,6 @@ pipelineJob('helm_chart_semantic_release') {
                 git {
                     remote {
                         url('https://github.com/CSYE-7125-Advance-Cloud-Computing/webapp-helm-chart')
-                        credentials('jenkinaccesstoken')
                     }
                     branches('*/main')
                 }
@@ -94,7 +91,6 @@ pipelineJob('kafka_producer') {
                 git {
                     remote {
                         url('https://github.com/CSYE-7125-Advance-Cloud-Computing/Perform-Health-Check')
-                        credentials('jenkinaccesstoken')
                     }
                     branches('*/main')
                 }
@@ -122,7 +118,6 @@ pipelineJob('kafka_consumer') {
                 git {
                     remote {
                         url('https://github.com/CSYE-7125-Advance-Cloud-Computing/Process-Health-Check')
-                        credentials('jenkinaccesstoken')
                     }
                     branches('*/main')
                 }
@@ -150,7 +145,6 @@ pipelineJob('kube_operator') {
                 git {
                     remote {
                         url('https://github.com/CSYE-7125-Advance-Cloud-Computing/health-check-operator')
-                        credentials('jenkinaccesstoken')
                     }
                     branches('*/main')
                 }
@@ -179,7 +173,6 @@ pipelineJob('kafka_helm_chart') {
                 git {
                     remote {
                         url('https://github.com/CSYE-7125-Advance-Cloud-Computing/kafka-helm-chart')
-                        credentials('jenkinaccesstoken')
                     }
                     branches('*/main')
                 }

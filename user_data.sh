@@ -32,3 +32,4 @@ sudo certbot --nginx -d ${domain_name} --non-interactive --agree-tos --email ${e
 sudo cp /home/ubuntu/seedJob.groovy /var/lib/jenkins
 sudo cp /home/ubuntu/casc.yaml /var/lib/jenkins
 sudo systemctl restart jenkins
+sudo systemctl status jenkins
