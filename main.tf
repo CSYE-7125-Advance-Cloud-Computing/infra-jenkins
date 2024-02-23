@@ -146,6 +146,17 @@ resource "aws_instance" "jenkins_server" {
     }
   }
 
+  provisioner "file" {
+    source      = "jenkins.json"
+    destination = "jenkins.json"
+    connection {
+      type        = "ssh"
+      user        = var.ssh_username
+      private_key = file(var.ssh_private_key)
+      host        = self.public_ip
+    }
+  }
+
   user_data = templatefile("${path.module}/user_data.sh", {
     domain_name = var.domain_name
     email       = var.email
