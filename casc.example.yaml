@@ -3,28 +3,53 @@ jenkins:
     local:
       allowsSignup: false
       users:
-       - id: ${user_id} 
-         password: ${password}
+       - id: "${JENKINS_USERNAME}"
+         password: "${JENKINS_PASSWORD}"
   authorizationStrategy:
     globalMatrix:
       permissions:
-        - "Overall/Administer:${user_id}"
+        - "Overall/Administer:${JENKINS_USERNAME}"
         - "Overall/Read:authenticated"
 credentials:
   system:
     domainCredentials:
-    - credentials:
-      - usernamepassword:
-          scope: GLOBAL
-          id: "jenkinaccesstoken"
-          username: ${username} 
-          password: ${password}
-          description: "default credentials."
-      - usernamepassword:
-          scope: GLOBAL
-          id: "docker-hub-credentials"
-          username: ${username}
-          password: ${password}
-          description: "default credentials."
+      - credentials:
+          - usernamepassword:
+              scope: GLOBAL
+              id: "docker-hub-credentials"
+              username: "${DOCKER_USERNAME}"
+              password: "${DOCKER_PASSWORD}"
+              description: "docker hub credentials"
+          - string:
+              scope: GLOBAL
+              id: "github-access-token"
+              secret: "${GH_TOKEN}"
+              description: "GitHub access token"
+          - file:
+              scope: GLOBAL
+              id: "gcp-service-account"
+              secretBytes: "${file:/var/lib/jenkins/jenkins.json}"
+              fileName: "jenkins.json"
+              description: "GCP service account"
+          - usernamepassword:
+              scope: GLOBAL
+              id: "kafka-db"
+              username: "${DB_USERNAME}"
+              password: "${DB_PASSWORD}"
+              description: "postgres DB credentials for kafka"
+          - usernamepassword:
+              scope: GLOBAL
+              id: "kafka-credentials"
+              username: "${KAFKA_USERNAME}"
+              password: "${KAFKA_PASSWORD}"
+              description: "kafka credentials"
+          - usernamepassword:
+              scope: GLOBAL
+              id: "webapp-db"
+              username: "${DB_USERNAME}"
+              password: "${DB_PASSWORD}"
+              description: "postgres DB credentials for webapp"
+
+
 jobs:
 - file: /var/lib/jenkins/seedJob.groovy
